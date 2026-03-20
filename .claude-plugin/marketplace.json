@@ -17,6 +17,17 @@
       },
       "source": "./plugins/learn-from-video",
       "category": "productivity"
+    },
+    {
+      "name": "anf-website-builder",
+      "description": "Build professional websites that don't look AI-generated using the ANIF Framework. Downloads real Unsplash photos, uses shadcn/ui + Magic UI components, and applies autoresearch-validated design patterns.",
+      "version": "1.0.0",
+      "author": {
+        "name": "ETMA",
+        "email": "etma@etma.dk"
+      },
+      "source": "./plugins/anf-website-builder",
+      "category": "design"
     }
   ]
 }
