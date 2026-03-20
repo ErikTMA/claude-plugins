@@ -4,7 +4,7 @@ A collection of open-source plugins for [Claude Code](https://docs.anthropic.com
 
 ## Plugins
 
-### learn-from-video
+### [learn-from-video](plugins/learn-from-video/)
 
 **Extract knowledge from any video — YouTube, Vimeo, Loom, or local files.**
 
