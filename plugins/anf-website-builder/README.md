@@ -39,11 +39,15 @@ claude plugin install anf-website-builder@etma-plugins
 The skill triggers automatically when you ask Claude to build a website, landing page, or marketing page. You can also invoke it explicitly:
 
 ```
-Build me a landing page for a SaaS analytics product called Metricly
+Build me a landing page for my SaaS product
 ```
 
 ```
-Create a website for my hosting company. Here's the current site: https://example.com
+Create a website for my coffee subscription business
+```
+
+```
+Scrape mysite.com and rebuild it with a modern design
 ```
 
 Claude will:
