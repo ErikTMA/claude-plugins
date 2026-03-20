@@ -35,6 +35,8 @@ The user provides: `<url-or-path> [intent description] [flags]`
 
 ## Workflow
 
+**IMPORTANT: Use the built-in fallback tiers. Do NOT install Python packages, npm modules, or write inline scripts to work around failures.** Each step has a fallback designed for when the previous tier fails. If all tiers fail, report it to the user — don't improvise.
+
 ### Step 0: Check Configuration
 
 Check if `~/.claude/learned/.config.json` exists. If it does, read it and apply saved preferences.
@@ -130,10 +132,12 @@ docker run --rm -v "$OUTPUT_DIR:/out" learn-from-video:light -c \
 Then pass `$OUTPUT_DIR/video.mp4` to transcribe.sh. Clean up the video file after transcription completes.
 
 **Tier 1 — YouTube Transcript MCP:**
-- Only for URLs (not local files)
-- Call `mcp__plugin_learn-from-video_youtube-transcript__get_transcript` with the URL
+- Only for YouTube URLs (not local files, not Vimeo/Loom)
+- Call `mcp__plugin_learn-from-video_youtube-transcript__get_transcript` with the URL and lang "en"
+- **Check the result carefully:** The tool may return `[object Object]`, an empty array, empty text, or a result with 0 segments. ALL of these count as failures.
+- **Success criteria:** The result must contain actual transcript text with multiple segments. If you get anything else (empty, object, error, or fewer than 5 segments), treat it as FAILED and continue to tier 2.
 - If successful, convert to unified format and save to `~/.claude/learned/<slug>/transcript.json`
-- If failed, continue to tier 2
+- If failed or ambiguous, **do NOT try to fix it with inline Python/npm installs** — just continue to tier 2. The fallback tiers are designed for this.
 
 **Tier 2 — Embedded/auto subtitles:**
 - These are extracted as a side effect of the full `extract-video.sh` run in Step 4 Phase D
