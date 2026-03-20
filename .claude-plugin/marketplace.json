@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "claude-plugins",
+  "name": "etma-plugins",
   "description": "Open-source Claude Code plugins by ETMA",
   "owner": {
     "name": "ETMA",
