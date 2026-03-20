@@ -1,0 +1,12 @@
+{
+  "name": "learn-from-video",
+  "version": "1.0.0",
+  "description": "Learn from any video — extract knowledge from YouTube, Vimeo, Loom, or local files using transcript + keyframe analysis",
+  "author": {
+    "name": "ETMA",
+    "email": "etma@etma.dk"
+  },
+  "license": "MIT",
+  "commands": "./commands",
+  "mcpServers": "./.mcp.json"
+}

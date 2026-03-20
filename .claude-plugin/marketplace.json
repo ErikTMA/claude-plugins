@@ -1,0 +1,22 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-plugins",
+  "description": "Open-source Claude Code plugins by ETMA",
+  "owner": {
+    "name": "ETMA",
+    "email": "etma@etma.dk"
+  },
+  "plugins": [
+    {
+      "name": "learn-from-video",
+      "description": "Learn from any video — extract knowledge from YouTube, Vimeo, Loom, or local files using transcript + keyframe analysis",
+      "version": "1.0.0",
+      "author": {
+        "name": "ETMA",
+        "email": "etma@etma.dk"
+      },
+      "source": "./plugins/learn-from-video",
+      "category": "productivity"
+    }
+  ]
+}

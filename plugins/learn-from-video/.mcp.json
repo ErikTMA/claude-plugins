@@ -1,0 +1,8 @@
+{
+  "youtube-transcript": {
+    "command": "npx",
+    "args": ["-y", "@kimtaeyoon83/mcp-server-youtube-transcript"],
+    "env": {},
+    "type": "stdio"
+  }
+}
