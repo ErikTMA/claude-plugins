@@ -1,7 +1,7 @@
 {
   "name": "anf-website-builder",
   "version": "1.0.0",
-  "description": "Build professional websites that don't look AI-generated using the ANIF Framework (Assemble, Normalize, Illustrate, Fill). Downloads real photos from Unsplash, uses shadcn/ui + Magic UI components, and applies 12 iterations of autoresearch-validated design patterns.",
+  "description": "Build professional websites that don't look AI-generated. Uses real designer components (shadcn/ui, Magic UI), real Unsplash photography, and free illustrations — following the ANIF Framework (Assemble, Normalize, Illustrate, Fill).",
   "author": {
     "name": "ETMA",
     "email": "etma@etma.dk"
