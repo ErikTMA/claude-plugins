@@ -1,20 +1,20 @@
 ---
 name: anf-website-builder
-description: "Build professional websites that don't look AI-generated using the ANF Framework (Assemble, Normalize, Fill). Use when the user wants to create a website, landing page, or marketing page that looks designer-made. Triggers: 'build me a website', 'create a landing page', 'make a professional site', 'ANF framework', or any request for a polished web page that should not look like typical AI output. Also use when the user complains about generic/ugly AI-generated websites. Do NOT use for: dashboards, admin panels, web apps with complex state, or internal tools — those need different patterns."
+description: "Build professional websites that don't look AI-generated using the ANIF Framework (Assemble, Normalize, Illustrate, Fill). Use when the user wants to create a website, landing page, or marketing page that looks designer-made. Triggers: 'build me a website', 'create a landing page', 'make a professional site', 'ANF framework', or any request for a polished web page that should not look like typical AI output. Also use when the user complains about generic/ugly AI-generated websites. Do NOT use for: dashboards, admin panels, web apps with complex state, or internal tools — those need different patterns."
 ---
 
-# ANF Website Builder
+# ANIF Website Builder
 
-Build websites that look designer-made by using ACTUAL designer-made components and REAL illustrations. Never hand-write sections from scratch. Never ship a page without visual assets.
+Build websites that look designer-made by using ACTUAL designer-made components, REAL photography, and researched content. Never hand-write sections from scratch. Never ship a page without visual assets.
 
-**The rule:** If a component exists in a library, use it. If an illustration exists for free, download it.
+**The rule:** If a component exists in a library, use it. If a photo exists for free, download it. If copy can be more specific, make it so.
 
 ## The Framework
 
 **A**ssemble — install real components from libraries
 **N**ormalize — unify into one cohesive design
 **I**llustrate — source and add real visuals to every page
-**F**ill — research topic, populate with real content
+**F**ill — research audience and topic, populate with specific content
 
 ## Workflow
 
@@ -26,7 +26,19 @@ Ask the user (if not already clear):
 - Design preferences? (dark/light, minimal/bold)
 - Reference sites?
 
-### Step 2: Assemble — Install and Use Real Components
+### Step 2: Brief — Establish Direction Before Coding
+
+Before installing anything, define the visual and content direction. Write a `brief.md` in the project root:
+
+1. **Target audience** — Who are they? What pain are they escaping? What outcome do they want? (2-3 sentences)
+2. **Layout personality** — Dense/editorial (tight spacing, lots of content) OR spacious/minimal (lots of white space) OR hybrid?
+3. **Hero composition** — Left-aligned text + right visual OR centered + full-width background OR split-screen?
+4. **Brand voice** — Professional/enterprise OR friendly/consumer OR technical/developer?
+5. **Competitor reference** (optional) — A real site to benchmark against
+
+This brief guides Normalize and Fill decisions. Skip only if the user has already provided all of this context.
+
+### Step 3: Assemble — Install and Use Real Components
 
 **CRITICAL: Actually install components from libraries. Do NOT hand-write sections.**
 
@@ -38,7 +50,7 @@ npx --yes create-next-app@latest <name> --typescript --tailwind --app --src-dir 
 cd <name>
 npx --yes shadcn@latest init -d
 npm install framer-motion lucide-react
-mkdir -p public/images
+mkdir -p public/images public/videos
 ```
 
 **For each section, install the actual component:**
@@ -87,7 +99,13 @@ import { BlurFade } from "@/components/ui/blur-fade";  // named export, NOT defa
 
 **Stats/metrics:** Use plain `<span>` with specific numbers. Do NOT use NumberTicker — it shows 0 on static renders.
 
-### Step 3: Normalize — Unify the Design
+**Sticky header (required):** Every site needs a sticky nav:
+```tsx
+<nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
+```
+Non-sticky headers are an AI-generated tell — every real production site uses sticky navigation.
+
+### Step 4: Normalize — Unify the Design
 
 1. **Typography** — Pick ONE font pairing via `next/font/google`. Never use Inter alone.
 2. **Color palette** — NOT indigo/purple/violet. Update CSS variables in `globals.css`.
@@ -95,14 +113,15 @@ import { BlurFade } from "@/components/ui/blur-fade";  // named export, NOT defa
 4. **Spacing** — `py-20` or `py-24` sections, `max-w-6xl mx-auto px-6` containers.
 5. **Visual rhythm** — At least 3 different background treatments across sections.
 6. **Remove AI tells** — No identical grids, no generic words, no round numbers, no default gray palette.
+7. **SEO meta** — Add a descriptive `<meta name="description">` in layout.tsx. Use semantic `<h2>`/`<h3>` headings that describe section content (not clever/cute headings that mean nothing to search engines or AI summarizers).
 
-### Step 4: Illustrate — Source Visuals for Every Page
+### Step 5: Illustrate — Source Visuals for Every Page
 
 **This step runs PER PAGE.** For each page, analyze every section and determine what visual assets would enhance it. Then find, download, and integrate them.
 
 Read `references/image-sources.md` for the full source list.
 
-**PREFER REAL PHOTOS over flat SVG illustrations.** Testing shows Unsplash photos score significantly higher on visual richness than generic SVGs. Photos add atmospheric depth that CSS cannot match.
+**PREFER REAL PHOTOS over flat SVG illustrations.** Unsplash photos score significantly higher on visual richness than generic SVGs. Photos add atmospheric depth that CSS cannot match.
 
 **The process:**
 
@@ -131,27 +150,40 @@ Read `references/image-sources.md` for the full source list.
    ```
 4. **Supplement with SVGs** from unDraw/DrawKit for specific illustrations where photos don't fit.
 5. **Generate CSS backgrounds** — Use gradient blobs (`blur-[120px]`), DotPattern, RetroGrid for section variety.
+6. **Video backgrounds (optional, for lifestyle/consumer brands):**
+   ```bash
+   # Download from coverr.co or mixkit.co (free, no attribution):
+   curl -L "<mp4-url>" -o public/videos/hero.mp4
+   ```
+   ```tsx
+   <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover">
+     <source src="/videos/hero.mp4" type="video/mp4" />
+   </video>
+   <div className="absolute inset-0 bg-background/70" />
+   ```
+   Best for: lifestyle brands, SaaS with human element. Avoid for: developer tools, enterprise B2B.
 
 **Visual requirements per section type:**
 
 | Section | Must Have | Source |
 |---------|----------|--------|
-| Hero | Large illustration OR detailed product mockup | unDraw, DrawKit, or CSS mockup |
-| Features | One illustration per feature (or per large card) | unDraw, DrawKit, ManyPixels |
-| How it works | Step illustrations or large numbered icons | DrawKit, unDraw |
-| Section dividers | Wave or curve SVG between at least 2 sections | getwaves.io, shapedivider.app |
-| CTA section | Background pattern or gradient mesh | Haikei, heropatterns.com |
+| Hero | Full-width background photo OR video + gradient overlay | Unsplash, Coverr |
+| Features | Photo backgrounds on large bento cards at 15-20% opacity | Unsplash |
+| How it works | Different component type from features (MagicCard vs BentoGrid) | — |
+| Section dividers | Wave or curve SVG between at least 2 sections | getwaves.io |
+| CTA section | Background pattern, photo, or gradient mesh | Unsplash, Haikei |
 | Testimonials | Colored avatar initials (CSS, no download needed) | CSS |
+| Blog index | Card grid with featured images per post | Unsplash per article |
 
 **What NOT to do:**
-- Don't skip this step — text-only pages score 5/10 on visual richness regardless of copy quality
-- Don't use tiny Lucide icons as section illustrations — they're for buttons and lists, not visual focal points
+- Don't skip this step — text-only pages look AI-generated regardless of copy quality
+- Don't use tiny Lucide icons as section illustrations — they're for buttons and lists
 - Don't hotlink to external URLs — always download to `public/images/`
 - Don't use the same illustration twice on one page
 
-### Step 5: Fill — Research and Populate
+### Step 6: Fill — Research and Populate
 
-**Research** the product/industry with WebSearch. Identify realistic features, pricing, testimonials, FAQs, stats.
+**Research** the product/industry with WebSearch. Also research the **target audience** — who they are, what language they use, what they fear and want. Refer to the brief from Step 2.
 
 **Content quality rules:**
 - Headlines: benefit-driven and specific. Bad: "Everything your app should be." Good: "Ship 3x faster with zero YAML."
@@ -160,7 +192,14 @@ Read `references/image-sources.md` for the full source list.
 - FAQ answers: include technical details (encryption type, API name, percentage)
 - Banned headline words: "Powerful", "Seamless", "Revolutionary", "Game-changing", "Next-gen", "Cutting-edge"
 
-### Step 6: Review and Polish
+**GEO (Generative Engine Optimization):**
+Sites need to be readable by AI answer engines (ChatGPT, Perplexity, etc.), not just humans:
+- Include FAQ entries that directly answer "What is [Product]?" and "How does [Product] work?"
+- Use semantic `<h2>`/`<h3>` headings that describe content — not clever/vague headings
+- Add an "About [Company]" paragraph visible on the page — AI summarizers scrape this first
+- The `<meta name="description">` should be a plain-language summary of the product in one sentence
+
+### Step 7: Review and Polish
 
 Run `npm run dev` and use Playwright to screenshot the result. Check:
 - Every section has a visual element (illustration, pattern, or mockup)
@@ -168,7 +207,47 @@ Run `npm run dev` and use Playwright to screenshot the result. Check:
 - Section backgrounds vary (at least 3 different treatments)
 - Features and How-it-works use different component types
 - Wave/curve dividers separate at least 2 sections
+- Sticky header is present and working
 - No overflow or rendering issues
+
+### Step 8: Design System (multi-page sites only)
+
+After page 1 is built and reviewed, extract the design system to `design-system.md`:
+
+```markdown
+# Design System
+
+## Colors
+- Primary: [value]
+- Accent: [value]
+- Background: [value]
+
+## Typography
+- Heading: [font name], weights [700, 800]
+- Body: [font name], weights [400, 500]
+
+## Spacing
+- Section padding: py-24
+- Container: max-w-6xl mx-auto px-6
+
+## Components used
+- Hero: [component names]
+- Cards: [component names]
+- Animations: [component names]
+
+## Visual patterns
+- Background treatment 1: [describe]
+- Background treatment 2: [describe]
+- Background treatment 3: [describe]
+```
+
+For pages 2-N, Claude reads `design-system.md` first and matches the established system. New pages may introduce new layouts but must stay within the defined color + type system. The design system carries across all pages — consistency is what makes a site feel professional.
+
+**Common additional pages:**
+- **About page** — Company story, team, values. Use timeline or alternating text+photo layout.
+- **Blog index** — Card grid with featured images, category badges, reading time. Use `AspectRatio` from shadcn.
+- **Contact page** — Form + map or office photo. Keep minimal.
+- **Services/Product pages** — Reuse feature bento pattern with different content per page.
 
 ## Important Rules
 
@@ -181,3 +260,4 @@ Run `npm run dev` and use Playwright to screenshot the result. Check:
 7. **Never use `BlurFade` with `inView` prop** — it uses IntersectionObserver which causes sections to be invisible in screenshots and static renders. Use `BlurFade` with `delay` only.
 8. **Never use `NumberTicker`** — it animates from 0 and shows 0 in screenshots. Use plain text spans.
 9. **Card contrast on dark themes** — use solid `bg-card` not transparent `bg-white/5`. Glass effects need at least 8-10% opacity to be visible.
+10. **Sticky header always** — use `sticky top-0 z-50 backdrop-blur-xl bg-background/80`.
