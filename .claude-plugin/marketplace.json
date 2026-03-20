@@ -10,7 +10,7 @@
     {
       "name": "learn-from-video",
       "description": "Learn from any video — extract knowledge from YouTube, Vimeo, Loom, or local files using transcript + keyframe analysis",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "ETMA",
         "email": "etma@etma.dk"

@@ -1,6 +1,6 @@
 {
   "name": "learn-from-video",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Learn from any video — extract knowledge from YouTube, Vimeo, Loom, or local files using transcript + keyframe analysis",
   "author": {
     "name": "ETMA",
