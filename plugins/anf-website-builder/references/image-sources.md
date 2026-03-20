@@ -45,7 +45,7 @@ Use these for hero visuals, feature section illustrations, and decorative elemen
 
 ## Colorful Feature Icons (larger than standard icons)
 
-When you need icons bigger and more detailed than Lucide (like the shield+server icons on Vertisky):
+When you need icons bigger and more detailed than Lucide (like colored shield+server feature graphics):
 
 - **Phosphor Icons** (phosphoricons.com) — 6,000+, MIT, 6 weights including `duotone` (two-tone colored)
 - Install: `npm install @phosphor-icons/react`
