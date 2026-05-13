@@ -1,9 +1,24 @@
 ---
 name: anf-website-builder
-description: "Build professional websites that don't look AI-generated using the ANIF Framework (Assemble, Normalize, Illustrate, Fill). Use when the user wants to create a website, landing page, or marketing page that looks designer-made. Triggers: 'build me a website', 'create a landing page', 'make a professional site', 'ANF framework', or any request for a polished web page that should not look like typical AI output. Also use when the user complains about generic/ugly AI-generated websites. Do NOT use for: dashboards, admin panels, web apps with complex state, or internal tools — those need different patterns."
+description: "Build professional websites that don't look AI-generated using the ANIF Framework (Assemble, Normalize, Illustrate, Fill). Use when the user wants a designer-made-looking website, landing page, or marketing page. Triggers: 'build me a website', 'create a landing page', 'ANF framework'. Do NOT use for: dashboards, admin panels, web apps with complex state, or internal tools — those need different patterns."
 ---
 
 # ANIF Website Builder
+
+## When to use
+
+Use when the user wants to create a website, landing page, or marketing page that looks designer-made. Also use when the user complains about generic/ugly AI-generated websites.
+
+**Trigger phrases:**
+- "build me a website"
+- "create a landing page"
+- "make a professional site"
+- "ANF framework"
+- Any request for a polished web page that should not look like typical AI output
+
+**Do NOT use for:** dashboards, admin panels, web apps with complex state, or internal tools — those need different patterns.
+
+## Overview
 
 Build websites that look designer-made by using ACTUAL designer-made components, REAL photography, and researched content. Never hand-write sections from scratch. Never ship a page without visual assets.
 
