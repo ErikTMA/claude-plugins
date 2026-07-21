@@ -1,0 +1,11 @@
+{
+  "name": "@etma/pi-plugins",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ETMA community pi skills and prompts",
+  "keywords": ["pi-package"],
+  "pi": {
+    "skills": ["plugins/*/skills"],
+    "prompts": ["plugins/*/commands"]
+  }
+}
