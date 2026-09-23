@@ -6,7 +6,6 @@ set -euo pipefail
 # Exit codes: 0=success, 1=download failed, 2=scene detection failed, 3=Docker unavailable
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PLUGIN_DIR="$(dirname "$SCRIPT_DIR")"
 
 INPUT="$1"
 OUTPUT_DIR="$2"
@@ -35,10 +34,9 @@ if ! docker info &>/dev/null; then
 fi
 
 # Build light image if needed
-if ! docker image inspect learn-from-video:light &>/dev/null; then
-  echo "Building learn-from-video:light image..." >&2
-  docker build -t learn-from-video:light -f "$PLUGIN_DIR/docker/Dockerfile.light" "$PLUGIN_DIR/docker" >&2
-fi
+# shellcheck source=lib.sh
+source "$SCRIPT_DIR/lib.sh"
+ensure_image light || { echo '{"error": "Failed to build light image"}' >&2; exit 3; }
 
 # Determine if input is a local file or URL
 IS_LOCAL="false"
@@ -54,16 +52,33 @@ if [ "$IS_LOCAL" = "true" ]; then
   # Copy local file into work dir (symlinks don't work across Docker bind mounts)
   cp "$(realpath "$INPUT")" "$WORK_DIR/video.mp4"
 else
+  case "$INPUT" in
+    http://*|https://*) ;;
+    *) echo '{"error": "Input must be an existing file or an http(s) URL"}' >&2; exit 1 ;;
+  esac
   # Download video via yt-dlp inside Docker
-  echo "Downloading video..." >&2
-  docker run --rm \
-    -v "$WORK_DIR:/work" \
-    learn-from-video:light \
-    -c "yt-dlp -f 'bestvideo[height<=${RESOLUTION}][vcodec!*=av01]+bestaudio/best[height<=${RESOLUTION}]' \
-        -S 'vcodec:h264' \
-        --merge-output-format mp4 \
-        -o '/work/video.mp4' \
-        '$INPUT'" || { echo '{"error": "Download failed"}' >&2; exit 1; }
+  # YouTube intermittently 403s a request (SABR/PO-token experiments); a fresh attempt usually passes.
+  # The URL goes in as an env var, never spliced into the shell string (a quote in it would break out).
+  DL_OK=0
+  DL_LOG="$WORK_DIR/yt-dlp.log"
+  for attempt in 1 2 3; do
+    echo "Downloading video (attempt $attempt/3)..." >&2
+    if docker run --rm \
+      -v "$WORK_DIR:/work" -e "URL=$INPUT" \
+      learn-from-video:light \
+      -c "yt-dlp -f 'bestvideo[height<=${RESOLUTION}][vcodec!*=av01]+bestaudio/best[height<=${RESOLUTION}]' \
+          -S 'vcodec:h264' \
+          --merge-output-format mp4 \
+          -o '/work/video.mp4' \
+          -- \"\$URL\"" 2>"$DL_LOG"; then cat "$DL_LOG" >&2; DL_OK=1; break; fi
+    cat "$DL_LOG" >&2
+    # Permanent failures: another attempt cannot help.
+    if grep -qiE "private video|video (is )?unavailable|has been removed|is not a valid URL|Unsupported URL|Sign in to confirm your age|members-only" "$DL_LOG"; then
+      break
+    fi
+    sleep $((attempt * 5))
+  done
+  [ "$DL_OK" = 1 ] || { echo '{"error": "Download failed"}' >&2; exit 1; }
 fi
 
 # Get video duration for sample frame extraction
@@ -83,11 +98,11 @@ echo "Video duration: ${DURATION}s" >&2
 echo "Extracting sample frames..." >&2
 docker run --rm \
   -v "$WORK_DIR:/work:ro" \
-  -v "$OUTPUT_DIR/samples:/out" \
+  -v "$OUTPUT_DIR/samples:/out" -e DURATION="$DURATION" \
   learn-from-video:light \
   -c "python3 -c \"
-import subprocess
-duration = float('$DURATION')
+import os, subprocess
+duration = float(os.environ['DURATION'])
 for i in range(10):
     t = duration * (0.05 + 0.1 * i)
     ts = f'{int(t//60):02d}m{int(t%60):02d}s'
@@ -108,7 +123,7 @@ fi
 echo "Running scene detection (threshold=$THRESHOLD)..." >&2
 docker run --rm \
   -v "$WORK_DIR:/work:ro" \
-  -v "$OUTPUT_DIR/keyframes:/out" \
+  -v "$OUTPUT_DIR/keyframes:/out" -e THRESHOLD="$THRESHOLD" \
   learn-from-video:light \
   -c "python3 << 'PYEOF'
 import json
@@ -121,7 +136,7 @@ import subprocess
 
 video = open_video('/work/video.mp4')
 scene_manager = SceneManager()
-scene_manager.add_detector(ContentDetector(threshold=float('$THRESHOLD')))
+scene_manager.add_detector(ContentDetector(threshold=float(os.environ['THRESHOLD'])))
 scene_manager.detect_scenes(video)
 
 scenes = scene_manager.get_scene_list()
@@ -177,10 +192,10 @@ docker run --rm \
 if [ "$IS_LOCAL" = "false" ]; then
   echo "Checking for auto-subtitles via yt-dlp..." >&2
   docker run --rm \
-    -v "$OUTPUT_DIR:/out" \
+    -v "$OUTPUT_DIR:/out" -e "URL=$INPUT" \
     learn-from-video:light \
     -c "yt-dlp --write-auto-sub --sub-lang en --skip-download \
-        --sub-format vtt -o '/out/autosub' '$INPUT' 2>/dev/null \
+        --sub-format vtt -o '/out/autosub' -- \"\$URL\" 2>/dev/null \
         && echo 'Found auto-subtitles' || echo 'No auto-subtitles'" >&2
 fi
 

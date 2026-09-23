@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --no-cache-dir \
-    yt-dlp \
+    'yt-dlp[default]' \
     scenedetect[opencv] \
     Pillow \
     imagehash \
@@ -17,6 +17,10 @@ RUN pip3 install --no-cache-dir \
 
 RUN pip3 install --no-cache-dir \
     torch --index-url https://download.pytorch.org/whl/cu124
+
+# YouTube needs a JS runtime for yt-dlp's challenge solver; without it downloads 403.
+# Pinned by digest; bump deliberately.
+COPY --from=denoland/deno:bin-2.9.7@sha256:bc5aa4466e21b6d3021226a85ba2e1911f7c386254d97b9d797903ab74edace2 /deno /usr/local/bin/deno
 
 WORKDIR /work
 ENTRYPOINT ["bash"]

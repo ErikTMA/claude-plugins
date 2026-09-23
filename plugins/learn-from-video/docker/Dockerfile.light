@@ -4,11 +4,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir \
-    yt-dlp \
+# Changes weekly (set by scripts/lib.sh) so the pip layer, and with it yt-dlp, is re-resolved.
+ARG YTDLP_REFRESH=unset
+RUN echo "yt-dlp refresh: ${YTDLP_REFRESH}" && pip install --no-cache-dir \
+    'yt-dlp[default]' \
     scenedetect[opencv] \
     Pillow \
     imagehash
+
+# YouTube needs a JS runtime for yt-dlp's challenge solver; without it downloads 403.
+# Pinned by digest; bump deliberately.
+COPY --from=denoland/deno:bin-2.9.7@sha256:bc5aa4466e21b6d3021226a85ba2e1911f7c386254d97b9d797903ab74edace2 /deno /usr/local/bin/deno
 
 WORKDIR /work
 ENTRYPOINT ["bash"]

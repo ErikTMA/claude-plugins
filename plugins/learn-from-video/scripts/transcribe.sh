@@ -6,7 +6,6 @@ set -euo pipefail
 # Exit codes: 0=success, 1=transcription failed, 2=Docker unavailable, 3=full image unavailable
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PLUGIN_DIR="$(dirname "$SCRIPT_DIR")"
 
 INPUT="$1"
 OUTPUT_DIR="$2"
@@ -31,14 +30,13 @@ if ! docker info &>/dev/null; then
   exit 2
 fi
 
-# Build full image if needed
-if ! docker image inspect learn-from-video:full &>/dev/null; then
-  echo "Building learn-from-video:full image (this may take several minutes)..." >&2
-  docker build -t learn-from-video:full -f "$PLUGIN_DIR/docker/Dockerfile.full" "$PLUGIN_DIR/docker" >&2 || {
-    echo '{"error": "Failed to build full image"}' >&2
-    exit 3
-  }
-fi
+# Build (or refresh) the full image; the first build takes several minutes
+# shellcheck source=lib.sh
+source "$SCRIPT_DIR/lib.sh"
+ensure_image full || {
+  echo '{"error": "Failed to build full image"}' >&2
+  exit 3
+}
 
 # Detect GPU if auto
 GPU_FLAG=""
@@ -89,19 +87,20 @@ CONTAINER_NAME="lfv-whisper-$$-$(date +%s)"
 docker run --rm --name "$CONTAINER_NAME" ${GPU_FLAG:+$GPU_FLAG} \
   -v "$INPUT_DIR:/input:ro" \
   -v "$OUTPUT_DIR:/output" \
+  -e IN_FILE="$INPUT_FILE" -e MODEL="$MODEL" -e DEVICE="$DEVICE" \
   learn-from-video:full \
   -c "
     echo '{\"status\": \"extracting_audio\", \"percent\": 5}' > /output/transcribe_progress.json
 
     # Extract audio if video
-    ffmpeg -i '/input/$INPUT_FILE' -ar 16000 -ac 1 -y /tmp/audio.wav 2>/dev/null
+    ffmpeg -i \"/input/\$IN_FILE\" -ar 16000 -ac 1 -y /tmp/audio.wav 2>/dev/null
 
     echo '{\"status\": \"transcribing\", \"percent\": 10}' > /output/transcribe_progress.json
 
     # Run whisper with verbose output to track progress
     whisper /tmp/audio.wav \
-      --model '$MODEL' \
-      --device '$DEVICE' \
+      --model \"\$MODEL\" \
+      --device \"\$DEVICE\" \
       --output_dir /output \
       --output_format json \
       --language en \
@@ -116,14 +115,14 @@ docker run --rm --name "$CONTAINER_NAME" ${GPU_FLAG:+$GPU_FLAG} \
 
     # Convert whisper JSON to unified format
     python3 -c \"
-import json, sys
+import json, os, sys
 with open('/output/audio.json') as f:
     data = json.load(f)
 segments = [{'start': round(s['start'], 2), 'end': round(s['end'], 2), 'text': s['text'].strip()} for s in data.get('segments', [])]
 unified = {'source': 'whisper', 'language': data.get('language', 'en'), 'segments': segments}
 with open('/output/transcript.json', 'w') as f:
     json.dump(unified, f, indent=2)
-print(json.dumps({'status': 'ok', 'segments': len(segments), 'model': '$MODEL', 'device': '$DEVICE'}))
+print(json.dumps({'status': 'ok', 'segments': len(segments), 'model': os.environ['MODEL'], 'device': os.environ['DEVICE']}))
 \"
 
     echo '{\"status\": \"complete\", \"percent\": 100}' > /output/transcribe_progress.json
